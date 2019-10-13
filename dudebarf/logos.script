@@ -1,0 +1,135 @@
+#include globals;
+#include modules
+#include layers
+
+global.Logos;
+logos=[];
+nlogos=0;
+
+fun Logo(name, x, y, zoffset, min_opacity, max_opacity, opacity_angle)
+{
+    local.o=[];
+    o.name=name;
+    o.file=name+".png";
+    if ( zoffset == NULL)
+    {
+        zoffset = 0;
+    }
+    if ( y == NULL)
+    {
+        y = CY;
+    }
+    if ( x == NULL)
+    {
+        x = CX;
+    }
+    if ( min_opacity == NULL)
+    {
+        min_opacity = 1.0;
+    }
+    if ( max_opacity == NULL)
+    {
+        max_opacity = 1.0;
+    }
+    if ( opacity_angle == NULL)
+    {
+        opacity_angle = 0.0;
+    }
+    o.min_opacity = min_opacity;
+    o.max_opacity = max_opacity;
+    o.opacity_angle = opacity_angle;
+    o.x=x;
+    o.y=y;
+    o.z=Logos.layer + zoffset;
+    o.enabled = 1;
+    return o;
+}
+
+fun pulse_logo(o)
+{
+    #debug_msg("Pulse logo " + o.name);
+
+    if(o.opacity_angle == NULL)
+    {
+        o.opacity_angle = 0.0;
+    }
+
+    if(o.min_opacity == NULL)
+    {
+        o.min_opacity=0.3;
+    }
+    if(o.max_opacity == NULL)
+    {
+        o.max_opacity=1.0;
+    }
+
+    change = ARC * 0.5;
+
+    o.opacity_angle += change;
+
+    range = o.max_opacity - o.min_opacity;
+
+    cos = Math.Cos(o.opacity_angle);
+    #debug_msg("cos("+o.opacity_angle+") = " + cos);
+    fraction = half(cos + 1);
+    #debug_msg("fraction=" + fraction);
+    #debug_msg("fraction*range=" + (fraction*range));
+
+    o.opacity =  o.min_opacity + (fraction * range);
+
+    if ( o.opacity != NULL )
+    {
+        o.sprite.SetOpacity (o.opacity);
+    }
+    #debug_msg("logo opacity = " + o.opacity + " from cos "+cos+",fraction="+fraction+",range="+range+",change="+change);
+}
+
+fun SetupLogos()
+{
+    global.logos;
+    global.nlogos;
+    #debug_msg("SetupLogos["+nlogos+"]");
+    for(n=0;n<nlogos;n++)
+    {
+        logo = logos[n];
+        if ( logo.enabled )
+        {
+            #debug_msg("SetupLogo");
+            logo = load_sprite(logo,"logo");
+            #debug_msg("Loaded logo " + logo);
+            if ( logo )
+            {
+                DefineAnim("logo-"+logo.file, logo, pulse_logo);
+            }
+        }
+        else
+        {
+            debug_msg("Logo "+ logo.name + " is not enabled");
+        }
+    }
+}
+
+fun TeardownLogos()
+{
+    global.logos;
+    global.nlogos;
+    for(n=0;n<nlogos;n++)
+    {
+        logo = logos[n];
+        if ( logo.enabled )
+        {
+            if ( logo.sprite )
+            {
+                logo.sprite.SetOpacity (0.0);
+            }
+        }
+    }
+}
+
+Logos = RegisterModule("logos", SetupLogos, TeardownLogos);
+Logos.layer = LayerZ("logos");
+
+#logos[nlogos++] = Logo("logo","center","center", nlogos, 0.2);
+logos[nlogos++] = Logo("Hex-TripleDark","center","center", nlogos, 0.2, 0.8, TWOPI);
+logos[nlogos++] = Logo("Hex-Nut-Skin-Transparent","center","center", nlogos, 0.2, 0.6, PI);
+

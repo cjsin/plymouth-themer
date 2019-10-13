@@ -1,0 +1,194 @@
+#include colors
+#include fonts
+
+fun half(x)
+{
+    return x / 2;
+}
+
+fun load_sprite(o, name)
+{
+    if ( name == NULL)
+    {
+        name="un-named";
+    }
+    #debug_msg("load_sprite " + name);
+
+    if ( o.opacity == NULL )
+    {
+        o.opacity = 1.0;
+    }
+
+    if ( o.file )
+    {
+        #debug_msg("Load image " + o.file);
+        o.img = Image(o.file);
+        if (!o.img)
+        {
+            debug_msg("Failed loading " + o.file);
+            o.img = Image.Text(o.file,1,1,1);
+        }
+    }
+    else if (o.text )
+    {
+        #debug_msg("ls " + name + " text " + o.text);
+        if ( o.text_color)
+        {
+            local.tc = o.text_color;
+            o.img = Image.Text(o.text, tc.r, tc.g, tc.b, 1.0);
+        }
+        else
+        {
+            o.img = Image.Text(o.text, 1, 1, 1, 1.0);
+        }
+    }
+
+    o.w = o.img.GetWidth();
+    o.h = o.img.GetHeight();
+
+    if ( o.scale != NULL)
+    {
+        o.scale_w = o.w*o.scale;
+        o.scale_h = o.h*o.scale;
+    }
+    else
+    {
+        o.scale=1.0;
+    }
+
+    if (o.scale_w != NULL || o.scale_h != NULL)
+    {
+        if ( o.scale_w == NULL)
+        {
+            o.scale_w = o.w;
+        }
+        else if ( o.scale_w == "keep")
+        {
+            o.scale_w = o.w;
+        }
+        if ( o.scale_h == NULL)
+        {
+            o.scale_h = o.h;
+        }
+        else if ( o.scale_h == "keep")
+        {
+            o.scale_h = o.h;
+        }
+        if ( o.scale_w != o.w || o.scale_h != o.h)
+        {
+            o.img = o.img.Scale(o.scale_w, o.scale_h);
+            o.w = o.img.GetWidth();
+            o.h = o.img.GetHeight();
+        }
+    }
+
+    #debug_msg("ls " + name + " img = " + o.img);
+    if ( o.initial_rotation)
+    {
+        #debug_msg("ls " + name + " rotate " + o.initial_rotation);
+        o.img = o.img.Rotate(o.initial_rotation);
+    }
+
+    o.w = o.img.GetWidth();
+    o.h = o.img.GetHeight();
+
+    if (o.x == "center" || o.x == NULL)
+    {
+        o.x = CX - half(o.w);
+    }
+    else
+    {
+        o.x = o.x + WX;
+    }
+    if (o.y == "center" || o.y == NULL)
+    {
+        o.y = CY - half(o.h);
+        #debug_msg("ls " + name + " center y based on height " + o.h+" and cy="+CY);
+    }
+    else
+    {
+        o.y = o.y + WY;
+    }
+    #debug_msg("sprite " + name + " img = " + o.img);
+    o.sprite = Sprite(o.img);
+    if ( o.z == NULL )
+    {
+        o.z = 10000; #SPRITES_DEFAULT_Z;
+    }
+    #debug_msg("sprite " + name + "xyz="+o.x+","+o.y+","+o.z);
+    o.sprite.SetPosition(o.x,o.y,o.z);
+    o.sprite.SetOpacity(o.opacity);
+    #debug_msg("ls " + name + " opacity " + o.opacity);
+    #debug_msg("ls " + name + " sprite " + o.x +","+o.y+","+o.z+" : " + o.opacity);
+    return o;
+}
+
+fun LoadSprite(name, file, text, img, scale, opacity, text_color, x, y, z) {
+    local.s=[];
+    s.name=name;
+    s.file=file;
+    s.text=text;
+    s.img=img;
+    s.scale=scale;
+    s.opacity=opacity;
+    s.text_color=text_color;
+    s.x=x;
+    s.y=y;
+    s.z=z;
+    return load_sprite(s, s.name);
+}
+
+fun text_sprite(text, x, y, z, opacity, text_color, fontname)
+{
+    if ( text_color == NULL)
+    {
+        text_color = WHITE;
+    }
+    if ( opacity == NULL)
+    {
+        opacity = 1.0;
+    }
+    if ( fontname == NULL)
+    {
+        fontname = DEFAULT_FONT;
+    }
+    local.t = Image.Text(text,text_color.r,text_color.g,text_color.b, opacity, fontname);
+    if ( ! t)
+    {
+        debug_msg("Font (or colour) failed:"+fontname);
+        t = Image.Text(text,text_color.r,text_color.g,text_color.b, opacity);
+    }
+    local.ts = Sprite(t);
+    ts.w=t.GetWidth();
+    ts.h=t.GetHeight();
+    ts.img = t;
+    ts.text=text;
+    ts.text_color=text_color;
+    ts.opacity = opacity;
+    if ( z == NULL )
+    {
+        z = 30000;
+    }
+    if ( x == NULL)
+    {
+        x = CX;
+    }
+    else if ( x == "center")
+    {
+        x = CX - half(ts.w);
+    }
+    if ( y == NULL)
+    {
+        y = CY;
+    }
+    else if ( y == "center")
+    {
+        y = CY - half(ts.h);
+    }
+
+    ts.x=x;
+    ts.y=y;
+    ts.z=z;
+    ts.SetPosition(ts.x,ts.y,ts.z);
+    return ts;
+}

@@ -1,0 +1,67 @@
+#include modules
+#include layers
+#include colors
+
+bgs = [];
+nbgs = 0;
+
+fun Bg(name, file, x, y, w, h, topcolor, botcolor, opacity, z)
+{
+    #debug_msg("Create BG");
+    local.o = [];
+    o.name=name;
+    if ( file )
+    {
+        o.file=file+".png";
+    }
+    o.x=x;
+    o.y=y;
+    o.z=z;
+    o.scale_w=w;
+    o.scale_h=h;
+    o.topcolor=topcolor;
+    o.botcolor.botcolor;
+    o.opacity=opacity;
+    debug_msg("Bg image created with z="+z);
+    return o;
+}
+
+fun SetupBg(bg)
+{
+    if ( bg.topcolor != NULL && bg.botcolor == NULL)
+    {
+        Window.SetBackgroundTopColor(bg.topcolor.r, bg.topcolor.g, bg.topcolor.b);
+        Window.SetBackgroundBottomColor(bg.botcolor.r, bg.botcolor.g, bg.botcolor.b);
+    }
+
+    if ( bg.file )
+    {
+        #debug_msg("Load bg file " + bg.file);
+        load_sprite(bg);
+    }
+}
+
+fun SetupBgs()
+{
+    global.bgs;
+    global.nbgs;
+    #debug_msg("SetupBgs ["+nbgs+"]");
+    #Window.SetBackgroundTopColor(BG.top.r, BG.top.g, BG.top.b);
+    #Window.SetBackgroundBottomColor(BG.top.r, BG.top.g, BG.top.b);
+    Window.SetBackgroundTopColor(0.5,0.9,1.0);
+    Window.SetBackgroundBottomColor(0.0,0.1,0.4);
+    #Window.SetBackgroundTopColor(0,0,0);
+    #Window.SetBackgroundBottomColor(0,0,0);
+
+    for(n=0;n<nbgs;n++)
+    {
+        SetupBg(bgs[n]);
+    }
+}
+
+Bgs = RegisterModule("bgs", SetupBgs);
+Bgs.layer = LayerZ("bgs");
+
+#bgs[nbgs++] = Bg("black","black","center","center", WW/20, WH/20, BLACK, BLACK, 1.0, Bgs.layer+nbgs);
+#bgs[nbgs++] = Bg("gloom","gloom",WX+WW/3,WY+WH/3, "keep","keep", BLACK, BLACK, 1.0, Bgs.layer+nbgs);
+bgs[nbgs++] = Bg("gloom","gloom",WX,WY, WW,WH, BLACK, BLACK, 1.0, Bgs.layer+nbgs);

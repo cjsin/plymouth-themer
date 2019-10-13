@@ -1,0 +1,92 @@
+#include window
+#include fonts
+#include dbg
+
+global.Debug;
+Debug.layer    = 15000;
+debugs         = [];
+ndebugs        = 0;
+debugrows      = 20;
+debugcols      = 2;
+debugrowheight = 20;
+DEBUGGING      = 1;
+DEBUG_FONT     = SMALL_FONT;
+
+fun debug_msg(text)
+{
+    global.DEBUGGING;
+    global.LEFT;
+    global.TOP;
+    global.debugs;
+    global.ndebugs;
+    global.debugrows;
+    global.debugcols;
+    global.debugrowheight;
+    if ( text == NULL)
+    {
+        text = "(null)";
+    }
+    if ( text == "")
+    {
+        text = "(empty-string)";
+    }
+    if ( DEBUGGING )
+    {
+        local.x = LEFT+20;
+        local.y = TOP+20;
+        local.row = ndebugs % debugrows;
+        local.col = Math.Int(ndebugs / debugrows);
+        if ( col > 0)
+        {
+            x += (WW / debugcols);
+        }
+        y += row * debugrowheight;
+        local.line="["+ndebugs+":"+row+","+col+"]: "+text;
+        #dbg("" + x + ","+y+":"+line);
+        #local.s = text_sprite(line, x, y, Debug.layer, 1.0, WHITE, DEBUG_FONT);
+        local.t = Image.Text(line,1,1,1,1.0,DEBUG_FONT);
+        if(t)
+        {
+            local.s = Sprite(t);
+            s.SetPosition(x,y,Debug.layer);
+            debugs[ndebugs++]=s;
+            local.h = t.GetHeight();
+            debugrowheight = h;
+            debugrows = Math.Int((WH - 40) / h);
+            if ( debugrows < 1)
+            {
+                debugrows=1;
+            }
+            if ( ndebugs >= (debugrows * debugcols))
+            {
+                ndebugs=0;
+            }
+            return s;
+        }
+        else
+        {
+            #local.s=Sprite(Image.Text("wtf",1,1,1));
+            #s.SetPosition(20,20,10000);
+            #debugs[ndebugs++]=s;
+            #return s;
+            return dbg("wtf");
+        }
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+fun assert(msg, cond)
+{
+    if ( ! cond )
+    {
+        debug_msg("Assert Error:"+msg);
+    }
+}
+
+fun non_null(what, x)
+{
+    assert (what, x != NULL);
+}

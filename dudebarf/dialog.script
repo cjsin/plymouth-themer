@@ -1,0 +1,67 @@
+#include modules
+#include layers
+
+global.Dialog;
+global.dialog;
+
+fun dialog_opacity(opacity)
+{
+    if (global.dialog)
+    {
+        dialog.box.sprite.SetOpacity (opacity);
+        dialog.lock.sprite.SetOpacity (opacity);
+        dialog.entry.sprite.SetOpacity (opacity);
+        for (index = 0; dialog.bullet[index]; index++)
+        {
+            dialog.bullet[index].sprite.SetOpacity(opacity);
+        }
+    }
+}
+
+fun SetupDialog()
+{
+    if ( ! global.dialog)
+    {
+        local.box;
+        local.lock;
+        local.entry;
+
+        box.image   = Image("box.png");
+        lock.image  = Image("lock.png");
+        entry.image = Image("entry.png");
+
+        box.sprite   = Sprite(box.image);
+        lock.sprite  = Sprite(lock.image);
+        entry.sprite = Sprite(entry.image);
+
+        box.x   = CX - half(box.image.GetWidth());
+        box.y   = CY - half(box.image.GetHeight());
+        box.z   = Dialog.layer;
+        lock.x  = box.x + half(box.image.GetWidth()) - half(lock.image.GetWidth() + entry.image.GetWidth());
+        lock.y  = box.y + half(box.image.GetHeight()) - half(lock.image.GetHeight());
+        lock.z  = box.z + 1;
+        entry.x = lock.x + lock.image.GetWidth();
+        entry.y = box.y + half(box.image.GetHeight()) - half(entry.image.GetHeight());
+        entry.z = box.z + 1;
+
+        box.sprite.SetPosition(box.x, box.y, box.z);
+        lock.sprite.SetPosition(lock.x, lock.y, lock.z);
+        entry.sprite.SetPosition(entry.x, entry.y, entry.z);
+
+        global.dialog;
+        dialog.box   = box;
+        dialog.lock  = lock;
+        dialog.entry = entry;
+        dialog.bullet_image = Image("bullet.png");
+        dialog_opacity (1);
+    }
+}
+
+fun TeardownDialog()
+{
+    dialog_opacity(0.0);
+}
+
+# Note the dialog setup is delayed until it is used.
+Dialog = RegisterModule("dialog", NULL, TeardownDialog);
+Dialog.layer = LayerZ("dialog");

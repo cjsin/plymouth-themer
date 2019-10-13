@@ -1,0 +1,37 @@
+#include setups
+
+modules=[];
+nmodules=0;
+
+fun RegisterModule(name, setupfunc, teardownfunc, o)
+{
+    global.modules;
+    global.nmodules;
+    if ( o == NULL)
+    {
+        o = [];
+    }
+    o.name=name;
+    o.setupfunc=setupfunc;
+    modules[name]=o;
+    nmodules++;
+    if ( setupfunc != NULL)
+    {
+        RegisterSetup(name, setupfunc, teardownfunc, o);
+    }
+    return o;
+}
+
+fun GetModule(name)
+{
+    if ( modules[name] )
+    {
+        return modules[name];
+    }
+    else
+    {
+        return modules["notfound-module"];
+    }
+}
+
+RegisterModule("notfound-module");

@@ -1,0 +1,13 @@
+# Window dimensions
+WX = Window.GetX();
+WY = Window.GetY();
+WW = Window.GetWidth();
+WH = Window.GetHeight();
+# Window Center position
+CX = WX + WW / 2;
+CY = WY + WH / 2;
+# Window bounds
+LEFT = WX;
+RIGHT = WX + WW;
+TOP = WY;
+BOT = WY+WH;

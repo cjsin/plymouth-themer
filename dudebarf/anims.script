@@ -1,0 +1,51 @@
+# For TICK
+#include globals
+
+# For RegisterModule
+#include modules
+
+global.Anims;
+
+anims=[];
+nanims=0;
+
+fun DefineAnim(name, obj, animfunc, pertick) {
+    global.anims;
+    global.nanims;
+
+    if ( pertick == NULL)
+    {
+        pertick = 1;
+    }
+
+    local.anim=[];
+    anim.name=name;
+    anim.obj=obj;
+    anim.animate=animfunc;
+    anim.pertick=pertick;
+    anims[nanims++]=anim;
+    return anim;
+}
+
+fun Animate() {
+    global.TICK;
+    global.anims;
+    global.nanims;
+    local.n;
+    #debug_msg("Animate[n="+nanims+"]");
+    for(n=0;n<nanims;n++)
+    {
+        local.a = anims[n];
+        local.pertick = a.pertick;
+        if ( pertick == 1 || ((TICK+1)%pertick) == 0)
+        {
+            if ( a.animate)
+            {
+                a.animate(a.obj);
+            }
+        }
+    }
+}
+
+
+Anims = RegisterModule("anims");

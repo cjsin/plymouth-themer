@@ -1,0 +1,43 @@
+# For RegisterModule
+#include modules
+
+# For LayerZ
+#include layers
+
+# For debug_msg
+#include debug
+
+# For positioning
+#include window
+
+message_sprite=[];
+
+fun display_message_callback (text)
+{
+    global.message_sprite;
+    local.my_image = Image.Text(text, 1, 1, 1);
+    message_sprite.SetImage(my_image);
+}
+
+fun hide_message_callback (text)
+{
+    create_empty_message();
+}
+
+fun create_empty_message()
+{
+    global.message_sprite;
+    message_sprite = Sprite();
+    message_sprite.SetPosition(CX+10, CY+10, Messages.layer);
+}
+
+fun SetupMessages()
+{
+    #debug_msg("SetupMessages");
+    create_empty_message();
+    Plymouth.SetDisplayMessageFunction (display_message_callback);
+    Plymouth.SetHideMessageFunction (hide_message_callback);
+}
+
+Messages = RegisterModule("messages", SetupMessages);
+Messages.layer = LayerZ("messages");

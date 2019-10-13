@@ -1,0 +1,8 @@
+#include setups
+
+fun quit_callback ()
+{
+    Teardown();
+}
+
+Plymouth.SetQuitFunction(quit_callback);

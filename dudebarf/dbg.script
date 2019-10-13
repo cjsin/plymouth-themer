@@ -1,0 +1,18 @@
+# Even more basic debug message for debugging the debug_msg
+dbgs=[];
+ndbgs=0;
+dbgx=20;
+dbgy=20;
+fun dbg(text)
+{
+    global.dbgs;
+    global.dnbgs;
+    global.dbgx;
+    global.dbgy;
+    local.t = Image.Text("["+ndbgs+"] "+text,0.3,0.3,0.3,1.0);
+    local.s = Sprite(t);
+    s.SetPosition(40,dbgy,15000); #dbgx,dbgy,10000);
+    dbgs[ndbgs++]=s;
+    dbgy = (dbgy + t.GetHeight()) % WH;
+    return s;
+}

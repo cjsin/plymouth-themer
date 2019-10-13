@@ -1,0 +1,55 @@
+#include globals
+#include setups
+#include modules
+#include window
+#include counter
+
+#include layers
+#include anims
+#include version
+
+#include colors
+#include util
+#include debug
+
+##include quit
+#include bgs
+
+#include flares
+#include logos
+
+#include progress
+
+#include messages
+#include dialog
+#include password
+
+#include display
+#include selected-variant
+#include overrides
+#include versiontext
+
+#debug_msg("Starting");
+
+non_null("white",WHITE);
+non_null("gold",GOLD);
+
+if ( global.Setup )
+{
+    Setup();
+}
+else
+{
+    #debug_msg("No Setup routines");
+}
+
+#debug_msg("Running.");
+
+# Create one invisible sprite because if the script plugin doesn't
+# have at least one then it will crash.
+# So this prevents it crashing when all the other sprites are
+# disabled.
+
+invisible_text = Image.Text("",1,1,1,0.0);
+invisible_sprite = Sprite(invisible_text);
+invisible_sprite.SetPosition(CX,CY,0);

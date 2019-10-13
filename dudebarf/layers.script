@@ -1,0 +1,58 @@
+#include dbg
+
+layers=[];
+nlayers=0;
+layernames=[];
+
+fun DefineLayer(name, z) {
+    global.layers;
+    global.nlayers;
+    local.layer=[];
+    layer.name=name;
+    layer.z=z;
+    layer.items=[];
+    layers[name]=layer;
+    layernames[nlayers++]=name;
+}
+
+fun GetLayer(name) {
+    global.layers;
+    return layers[name];
+}
+
+fun LayerZ(name) {
+    global.layers;
+    local.layer = GetLayer(name);
+    if(layer)
+    {
+        return layer.z;
+    }
+    else
+    {
+        debug_msg("Layer unknown ["+name+"]");
+        return layers["unknown"].z;
+    }
+}
+
+DefineLayer("bgs",0);
+DefineLayer("flares",100);
+DefineLayer("logos",200);
+DefineLayer("version",300);
+DefineLayer("progress",400);
+DefineLayer("dialog",500);
+DefineLayer("messages",600);
+DefineLayer("unknown",700);
+DefineLayer("debug",800);
+
+fun DebugLayers()
+{
+    for(n=0;n<nlayers;n++)
+    {
+        name=layernames[n];
+        layer=layers[name];
+        #dbg("Layer["+n+"]=("+name+")"+layer);
+        dbg("LayerZ("+name+") = " + LayerZ(name));
+    }
+}
+
+#DebugLayers();

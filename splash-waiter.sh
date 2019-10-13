@@ -1,0 +1,78 @@
+#!/bin/bash
+
+TTY="tty1"
+WAIT=60
+START_TTY=0
+SWITCH_TTY=5
+
+function usage()
+{
+    echo "${0##*/} [--help|--ready|--wait]" 1>&2
+}
+
+function do_wait()
+{
+    sleep "${WAIT}"
+}
+function motd()
+(
+    export TERM=linux
+    clear
+    if [[ -d "/etc/update-motd.d" ]]
+    then
+        local f
+        shopt -s nullglob
+        for f in /etc/update-motd.d/*
+        do
+            "${f}"
+        done
+    fi
+)
+
+function do_ready()
+{
+    motd < "/dev/${TTY}" > "/dev/${TTY}" 1>&2
+
+    if (( START_TTY ))
+    then
+        systemctl enable "getty@${TTY}.service"
+        systemctl start  "getty@${TTY}.service"
+    fi
+
+    if (( SWITCH_TTY ))
+    then
+        chvt ${SWITCH_TTY}
+    fi
+}
+
+function main()
+{
+    if ! (( $# ))
+    then
+        usage
+        exit 1
+    fi
+    local arg=""
+    for arg in "${@}"
+    do
+        case "${arg}" in
+            -h|-help|--help|help)
+                usage
+                return 0
+                ;;
+            -r|-ready|--ready|ready)
+                do_ready
+                ;;
+            -w|-wait|--wait|wait)
+                do_wait
+                ;;
+            *)
+                err "Unrecognised argument: ${arg}"
+                usage
+                return 1
+                ;;
+        esac
+    done
+}
+
+main "${@}"

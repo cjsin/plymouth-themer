@@ -1,0 +1,63 @@
+DURATION=0.0;
+PROGRESS=0.0;
+
+progress_bar=[];
+progress_bar.enabled=0;
+progress_box=[];
+
+#----------------------------------------- Progress Bar --------------------------------
+
+fun SetupProgress()
+{
+    if ( progress_bar.enabled)
+    {
+        #debug_msg("progress_setup");
+        progress_box.file = "progress_box.png";
+        progress_bar.file = "progress_bar.png";
+        progress_box.image = Image(progress_box.file);
+        progress_box.sprite = Sprite(progress_box.image);
+
+        boxw = progress_box.image.GetWidth();
+        boxh = progress_box.image.GetHeight();
+        progress_box.w = boxw;
+        progress_box.h = boxh;
+        progress_box.x = CX - half(boxw);
+        progress_box.y = WY + WH * 0.75 - half(boxh);
+        progress_box.sprite.SetPosition(progress_box.x, progress_box.y, Progress.layer);
+
+        progress_bar.original_image = Image(progress_bar.file);
+        progress_bar.sprite = Sprite();
+
+        origw = progress_bar.original_image.GetWidth();
+        origh = progress_bar.original_image.GetHeight();
+        progress_bar.origw = origw;
+        progress_bar.origh = origh;
+        progress_bar.x = CX -        half(origw);
+        progress_bar.y = WY + WH / 2 * 1.5  - half(boxh) + half(boxh - origh);
+        progress_bar.sprite.SetPosition(progress_bar.x, progress_bar.y, Progress.layer+1);
+    }
+}
+
+fun progress_callback (duration, progress)
+{
+    global.DURATION;
+    global.PROGRESS;
+
+    DURATION = duration;
+    PROGRESS = progress;
+
+    global.progress_bar;
+    if ( progress_bar.enabled )
+    {
+        if (progress_bar.image.GetWidth () != Math.Int (progress_bar.origw * progress))
+        {
+            progress_bar.image = progress_bar.original_image.Scale(progress_bar.origw * progress, progress_bar.origh);
+            progress_bar.sprite.SetImage (progress_bar.image);
+        }
+    }
+}
+
+Progress = RegisterModule("progress", SetupProgress, TeardownProgress);
+Progress.layer = LayerZ("progress");
+
+Plymouth.SetBootProgressFunction(progress_callback);

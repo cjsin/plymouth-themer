@@ -1,0 +1,38 @@
+# For RegisterModule
+#include modules
+
+# For text_sprite
+#include util
+
+global.Version;
+
+versions=[];
+nversions=0;
+
+versiontexts=[];
+nversiontexts=0;
+
+fun SetupVersion()
+{
+    global.versions;
+    global.nversions;
+    global.versiontexts;
+    global.nversiontexts;
+    local.n;
+    local.widest=0;
+    local.y=BOT-40;
+    for(n=0;n<nversiontexts;n++)
+    {
+        local.v = text_sprite(versiontexts[n], "center", y, Version.layer, 1.0, WHITE);
+        versions[n]=v;
+        y -= v.h;
+    }
+}
+
+fun AddVersionText(text)
+{
+    versiontexts[nversiontexts++]=text;
+}
+
+Version = RegisterModule("version", SetupVersion);
+Version.layer = LayerZ("version");

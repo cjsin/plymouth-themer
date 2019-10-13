@@ -1,0 +1,50 @@
+#include modules
+
+# Even more basic debug message for debugging the debug_msg
+global.Counter;
+
+global.counter;
+
+fun CounterTicked()
+{
+    global.counter;
+    global.TICK;
+    global.PROGRESS;
+    global.DURATION;
+    if ( TICK % 10 != 0)
+    {
+        return NULL;
+    }
+
+    if (!counter)
+    {
+        counter=[];
+        counter.box = Sprite();
+        counter.text = Sprite();
+        counter.black = Image("black.png");
+        counter.w=1;
+        counter.h=1;
+    }
+
+    local.t = Image.Text(""+TICK+","+PROGRESS+"@"+DURATION,0.3,0.3,0.3,1.0);
+    if ( t )
+    {
+        counter.text.SetImage(t);
+        w = t.GetWidth();
+        h = t.GetHeight();
+        if ( w > counter.w || h > counter.h)
+        {
+            counter.w=w;
+            counter.h=h;
+            if ( counter.black )
+            {
+                counter.box.SetImage(counter.black.Scale(counter.w,counter.h));
+            }
+        }
+        counter.box.SetPosition(RIGHT-counter.w,TOP,15000);
+        counter.text.SetPosition(RIGHT-counter.w,TOP,counter.box.GetZ()+1);
+    }
+    return counter;
+}
+
+Counter = RegisterModule("counter");

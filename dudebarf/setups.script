@@ -1,0 +1,62 @@
+
+setups  = [];
+nsetups = 0;
+SETUP   = 0;
+
+fun RegisterSetup(name, setupfunc, teardownfunc, data) {
+    global.setups;
+    global.nsetups;
+    #debug_msg("RegisterSetup " + name);
+    if ( setupfunc != NULL || teardownfunc != NULL)
+    {
+        local.s=[];
+        s.name=name;
+        s.data=data;
+        s.setup = setupfunc;
+        s.teardown = teardownfunc;
+        setups[nsetups++]=s;
+    }
+}
+
+fun Setup() {
+    global.SETUP;
+    global.setups;
+    global.nsetups;
+    #debug_msg("Setup() [n="+nsetups+"]");
+    local.n;
+    if (! SETUP)
+    {
+        SETUP=1;
+        for(n=0;n<nsetups;n++)
+        {
+            local.s = setups[n];
+            if ( s)
+            {
+                #debug_msg("Setup("+s.name+")");
+                if ( s.setup )
+                {
+                    s.setup(s.name,s.data);
+                }
+            }
+        }
+    }
+}
+
+fun Teardown()
+{
+    global.SETUP;
+    global.setups;
+    global.nsetups;
+    local.n;
+    if (SETUP)
+    {
+        for(n=0;n<nsetups;n++)
+        {
+            local.s = setups[n];
+            if ( s && s.teardown )
+            {
+                s.teardown(s.name,s.data);
+            }
+        }
+    }
+}

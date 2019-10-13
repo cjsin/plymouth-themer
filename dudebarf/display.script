@@ -1,0 +1,82 @@
+# These are the modules this file uses, however,
+# it doesn't require them, it only uses them if they are available.
+# hence they are not 'included' here.
+
+##include setups
+##include anims
+##include dialog
+##include password
+
+STATUS = "normal";
+
+fun normal_refresh()
+{
+    if ( global.Anims)
+    {
+        Animate();
+    }
+    else
+    {
+        debug_msg("No anims");
+    }
+}
+
+fun password_refresh()
+{
+    if ( global.Password)
+    {
+    }
+}
+
+fun refresh_callback ()
+{
+    if ( global.Setups )
+    {
+        # Do the setup if it hasn't been done yet
+        Setup();
+    }
+
+    global.TICK;
+    TICK++;
+
+    if ( global.Counter)
+    {
+        CounterTicked();
+    }
+    else
+    {
+        debug_msg("No Counter avail");
+    }
+
+    if (global.STATUS == "normal")
+    {
+        normal_refresh();
+    }
+    else
+    {
+        password_refresh();
+    }
+}
+
+fun display_normal_callback ()
+{
+    #debug_msg("display_normal_callback");
+    global.STATUS = "normal";
+    if ( global.Dialog)
+    {
+        dialog_opacity (0);
+    }
+}
+
+fun display_password_callback (prompt, bullets)
+{
+    global.STATUS = "password";
+    if ( global.Dialog)
+    {
+        ShowPasswordDialog(prompt, bullets);
+    }
+}
+
+Plymouth.SetRefreshFunction (refresh_callback);
+Plymouth.SetDisplayNormalFunction(display_normal_callback);
+Plymouth.SetDisplayPasswordFunction(display_password_callback);

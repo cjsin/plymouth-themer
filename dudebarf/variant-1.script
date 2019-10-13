@@ -1,0 +1,3 @@
+VARIANT_NAME = "1";
+debug_msg("blah1");
+debug_msg("blah2");

@@ -1,0 +1,69 @@
+# For RegisterModule
+#include modules
+
+# For LayerZ
+#include layers
+
+# For load_sprite
+#include util
+
+#include anims
+
+global.Flares;
+flares = [];
+nflares=0;
+
+fun Flare(name, x, y, zoffset, rot, ang, scale)
+{
+    local.f=[];
+    f.name=name;
+    f.file=name+".png";
+    f.x = x;
+    f.y = y;
+    f.z = Flares.layer + zoffset;
+    f.rot = rot;
+    f.ang = ang;
+    f.scale = scale;
+    return f;
+}
+
+flares[nflares++]=Flare("001", "center", "center", 0, 0.5 * ARC, 0.0, 1.1);
+flares[nflares++]=Flare("002", "center", "center", 1, -0.1* ARC, 0.0, 0.9);
+flares[nflares++]=Flare("003", "center", "center", 2, 0.1 * ARC, 0.0, 1.0);
+
+fun cycle_flare(f)
+{
+    #debug_msg("cycle flare " + f.name);
+    local.offset = f.z - Flares.layer;
+    local.new_offset = (offset + 1) % nflares;
+    f.z = Flares.layer + new_offset;
+    f.sprite.SetZ(f.z);
+    return f;
+}
+
+fun rotate_flare(f)
+{
+    #debug_msg("Rotate flare " + f.name);
+    f.ang = (f.ang + f.rot ) % TWOPI;
+    f.sprite.SetImage(f.img.Rotate(f.ang));
+}
+
+fun SetupFlares()
+{
+    #debug_msg("SetupFlares");
+    global.flares;
+    global.nflares;
+
+    local.n;
+    for(n=0;n<nflares;n++)
+    {
+        #debug_msg("setup flare " + n);
+        local.f = load_sprite(flares[n],name);
+        flares[n]=f;
+        DefineAnim(f.name, flares[n], cycle_flare, 13);
+        DefineAnim(f.name, flares[n], rotate_flare);
+    }
+}
+
+Flares = RegisterModule("flares", SetupFlares);
+Flares.layer = LayerZ("flares");
