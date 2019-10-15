@@ -1,3 +1,13 @@
-VARIANT_NAME = "1";
-debug_msg("blah1");
-debug_msg("blah2");
+VARIANT_NAME = "variant-1";
+
+xbase=WX+(WW/6);
+ybase=WY+(WH/4);
+
+bgs[nbgs++] = Bg("black","black",WX,WY, WW,WH, BLACK, BLACK, 1.0, Bgs.layer+nbgs);
+
+flares[nflares++]=Flare("001", xbase, ybase,       0, 0.5 * ARC, 0.0, 1.1);
+flares[nflares++]=Flare("002", xbase-40, ybase+80, 1, -0.1* ARC, 0.0, 0.9);
+flares[nflares++]=Flare("003", xbase+40, ybase+80, 2, 0.1 * ARC, 0.0, 1.0);
+
+logos[nlogos++] = Logo("Hex-TripleDark","center","center", nlogos, 0.2, 0.8, TWOPI);
+logos[nlogos++] = Logo("Hex-Nut-Skin-Transparent","center","center", nlogos, 0.2, 0.6, PI);

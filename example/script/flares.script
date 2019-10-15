@@ -27,10 +27,6 @@ fun Flare(name, x, y, zoffset, rot, ang, scale)
     return f;
 }
 
-flares[nflares++]=Flare("001", "center", "center", 0, 0.5 * ARC, 0.0, 1.1);
-flares[nflares++]=Flare("002", "center", "center", 1, -0.1* ARC, 0.0, 0.9);
-flares[nflares++]=Flare("003", "center", "center", 2, 0.1 * ARC, 0.0, 1.0);
-
 fun cycle_flare(f)
 {
     #debug_msg("cycle flare " + f.name);

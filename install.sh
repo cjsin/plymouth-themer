@@ -3,8 +3,14 @@
 ALTERNATIVE_WAITER="${ALTERNATIVE_WAITER:-0}"
 EARLY_TTYS="${EARLY_TTYS:-${ALTERNATIVE_WAITER}}"
 SELECT_THEME="${SELECT_THEME:-0}"
-THEME="example"
+REBUILD_INITRD="${REBUILD_INITRD:-0}"
+THEME="${THEME:-example}"
+
+# This is determined automagically later from the plymouth-set-default-theme command
 THEMES="/usr/share/plymouth/themes"
+ETC="/etc"
+
+VARIANT="default"
 
 function msg()
 {
@@ -33,6 +39,7 @@ function usage()
     msg "    ALTERNATIVE_WAITER   - modify plymouth to wait for splash-waiter script before quitting."
     msg "    EARLY_TTYS           - stop getty service from waiting for plymouth to quit."
     msg "    SELECT_THEME         - select this theme as the default after installation."
+    msg "    REBUILD_INITRD       - use -R option to plymouth-set-default-theme"
 }
 
 function install-dropin()
@@ -90,13 +97,22 @@ function select-theme()
 {
     if (( SELECT_THEME ))
     then
-        plymouth-set-default-theme "${THEME_NAME}"
+        local rebuild_flag=""
+        if (( REBUILD_INITRD ))
+        then
+            rebuild_flag="-R"
+        fi
+        plymouth-set-default-theme ${rebuild_flag} "${THEME_NAME}"
+        echo "SPLASH_VARIANT=${VARIANT}" > "/etc/default/splash-${THEME_NAME}"
+        # Note that this file needs to be edited within the initrd, generally, not the main
+        # system (unless for example we're still running with the initrd as with a diskless boot)
+        sed -i 's/^Theme=/Theme=${THEME_NAME}/' "${ETC}/plymouth/plymouth.conf"
     fi
-}_
+}
 
 function configure-themer()
 {
-    install_dropin plymouth-start splash-themer.conf
+    install-dropin plymouth-start splash-themer.conf
 }
 
 function configure-ttys()
@@ -121,7 +137,7 @@ function configure-waiter()
 {
     if (( ALTERNATIVE_WAITER ))
     then
-        install_dropin plymouth-quit splash-waiter.conf
+        install-dropin plymouth-quit splash-waiter.conf
     fi
 }
 
@@ -135,7 +151,7 @@ function process-argv()
                 usage
                 exit 0
                 ;;
-            ALTERNATIVE_WAITER=*|SELECT_THEME=*|EARLY_TTYS=*)
+            ALTERNATIVE_WAITER=*|SELECT_THEME=*|EARLY_TTYS=*|REBUILD_INITRD=*)
                 local key="${arg%%=*}"
                 local val="${arg#*=}"
                 if [[ "${val}" =~ ^[01]$ ]]
@@ -146,6 +162,11 @@ function process-argv()
                     die "Unrecognised option value: '${val}' for ${key}"
                 fi
                 ;;
+            VARIANT=*)
+                local key="${arg%%=*}"
+                local val="${arg#*=}"
+                eval "${arg}"="${val}"
+                ;;
             *)
                 usage
                 die "Unrecognised option: '${arg}'"
@@ -154,11 +175,64 @@ function process-argv()
     done
 }
 
+function determine-themedir()
+{
+
+    local cmd=$(command -v plymouth-set-default-theme)
+    local check=()
+
+    if [[ "${cmd}" =~ ^/usr/local ]]
+    then
+        check+=("/usr/local/share/plymouth/themes")
+    elif [[ "${cmd}" =~ ^/usr/ ]]
+    then
+        check+=("/usr/share/plymouth/themes")
+    elif [[ "${cmd}" =~ ^/opt ]]
+    then
+        check+=("/opt/plymouth/themes")
+    else
+        local bindir="${cmd%/*}"
+        local bin_parent="${bindir%/bin}"
+        bin_parent="${bin_parent%/sbin}"
+        check+=("${bin_parent}/themes")
+        check+=("${bin_parent}/share/themes")
+    fi
+    check+=("/usr/share/plymouth/themes")
+    local dir
+    for dir in "${check[@]}"
+    do
+        if [[ -d "${dir}" ]]
+        then
+            THEMES="${dir}"
+            case "${d}" in
+                /usr/local/*)
+                    ETC="/usr/local/etc"
+                    ;;
+                /usr/*)
+                    ETC="/etc"
+                    ;;
+                /opt/*)
+                    ETC="/etc"
+                    ;;
+                *)
+                    ETC="/etc"
+                    ;;
+            esac
+            break
+        fi
+    done
+}
+
 function main()
 {
     process-argv "${@}"
 
-    if install-plymouth && copy-theme
+    if install-plymouth
+    then
+        determine-themedir
+    fi
+
+    if copy-theme
     then
         select-theme
         configure-themer

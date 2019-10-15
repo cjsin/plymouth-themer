@@ -132,4 +132,3 @@ Logos.layer = LayerZ("logos");
 #logos[nlogos++] = Logo("logo","center","center", nlogos, 0.2);
 logos[nlogos++] = Logo("Hex-TripleDark","center","center", nlogos, 0.2, 0.8, TWOPI);
 logos[nlogos++] = Logo("Hex-Nut-Skin-Transparent","center","center", nlogos, 0.2, 0.6, PI);
-

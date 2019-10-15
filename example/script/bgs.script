@@ -61,7 +61,3 @@ fun SetupBgs()
 
 Bgs = RegisterModule("bgs", SetupBgs);
 Bgs.layer = LayerZ("bgs");
-
-#bgs[nbgs++] = Bg("black","black","center","center", WW/20, WH/20, BLACK, BLACK, 1.0, Bgs.layer+nbgs);
-#bgs[nbgs++] = Bg("gloom","gloom",WX+WW/3,WY+WH/3, "keep","keep", BLACK, BLACK, 1.0, Bgs.layer+nbgs);
-bgs[nbgs++] = Bg("gloom","gloom",WX,WY, WW,WH, BLACK, BLACK, 1.0, Bgs.layer+nbgs);
