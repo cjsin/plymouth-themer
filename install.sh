@@ -3,7 +3,7 @@
 ALTERNATIVE_WAITER="${ALTERNATIVE_WAITER:-0}"
 EARLY_TTYS="${EARLY_TTYS:-${ALTERNATIVE_WAITER}}"
 SELECT_THEME="${SELECT_THEME:-0}"
-THEME="dudebarf"
+THEME="example"
 THEMES="/usr/share/plymouth/themes"
 
 function msg()
@@ -37,8 +37,9 @@ function usage()
 
 function install-dropin()
 {
-    local file="${1}"
-    local dir="/etc/systemd/system/${2}.service.d"
+    local service_name="${1}"
+    local file="${2}"
+    local dir="/etc/systemd/system/${service_name}.service.d"
     mkdir -p "${dir}"
     cp -f "${file}" "${dir}/"
 }
@@ -50,12 +51,13 @@ function is-installed()
 
 function install-plymouth()
 {
+    # We need plymouth-themes for the plymouth script plugin
     if is-installed apt-get
     then
         apt-get -y install plymouth-themes || /bin/true
     elif is-installed yum || is-installed dnf
     then
-        yum -y install plymouth-themes
+        yum -y install plymouth-plugin-script
     else
         err "Could not determine distro for plymouth installation."
         return 1
@@ -88,9 +90,9 @@ function select-theme()
 {
     if (( SELECT_THEME ))
     then
-        plymouth-set-default-theme dudebarf
+        plymouth-set-default-theme "${THEME_NAME}"
     fi
-}
+}_
 
 function configure-themer()
 {
@@ -103,14 +105,14 @@ function configure-ttys()
     # then we need to stop the login ttys from waiting for the splash
     if (( EARLY_TTYS ))
     then
-        getty_after=$(systemctl cat getty@.service \
+        local getty_after=$(systemctl cat getty@.service \
             | sed -n -e '/^After=/ { s/(plymouth-quit-wait|rc-local)[.]service/ /g; s/^After=[[:space:]]*$//; p}' )
 
-       tmpd=$(mktemp -t -d tmp_dropin.XXXXXX)
-       getty_dropin="${tmpd}/splash-waiter.conf"
+       local tmpd=$(mktemp -t -d tmp_dropin.XXXXXX)
+       local getty_dropin="${tmpd}/splash-waiter.conf"
        echo -e "[Unit]\nAfter=\n${getty_after}" > "${getty_dropin}"
 
-       install_dropin getty@.service "${getty_dropin}"
+       install-dropin getty@.service "${getty_dropin}"
        systemctl disable getty@tty1.service
     fi
 }

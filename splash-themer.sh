@@ -2,13 +2,14 @@
 #set -vx
 shopt -s nullglob
 
-THEME_NAME="dudebarf"
-THEMES="/usr/share/plymouth/themes"
+HELP_REGEX='[[:space:]](-h|-help|--help|help)[[:space:]]'
+THEME_NAME="${THEME_NAME:-dudebarf}"
+THEMES="${THEMES:-/usr/share/plymouth/themes}"
 TESTING="${TESTING:-0}"
 NUMBERING="${NUMBERING:-0}"
-TEST_COMMANDLINE=(abc def s.variant=1 test )
+TEST_COMMANDLINE=(splash quiet s.printk s.variant=1 s.est=30 s.cyc=2  )
 config_files=(/etc/default/splash-{${THEME_NAME}})
-flag_names='^(variant|est|cyc)$'
+flag_names='^(variant|est|cyc|printk)$'
 
 declare -A shortcuts
 shortcuts=()
@@ -39,6 +40,22 @@ function die()
 {
     err "${@}"
     exit 1
+}
+
+function usage()
+{
+    msg "Usage: ${0##*/} [-h|-help|--help] <options>"
+    msg ""
+    msg "  Process splash options and update (generate) the splash theme."
+    msg ""
+    msg "  If no options are specified then the contents of /proc/cmdline will be used."
+    msg ""
+    msg "  Options:"
+    msg "     s.est             Specify an estimated boot time"
+    msg "     s.cyc             I forget"
+    msg "     s.variant         Choose a theme variant file"
+    msg "     s.theme           Choose a different theme"
+    msg "     s.!<var-name>     Set a variable in the theme file "
 }
 
 function load_config()
@@ -86,6 +103,9 @@ function process_args()
     for arg in "${@}"
     do
         case "${arg}" in
+            quiet)
+                [[ -w /proc/sys/kernel/printk ]] && echo "2 3 1 7" > /proc/sys/kernel/printk
+                ;;
             s.!*=*)
                 arg="${arg:3}"
                 n="${arg%%=*}"
@@ -252,46 +272,65 @@ function update_theme()
     [[ -z "${variant}" ]] && variant="${fallback_variant}"
 
     local theme_dir="${THEMES}/${theme}"
+    local script_dir="${theme_dir}/script"
+
     if [[ ! -d "${theme_dir}" ]]
     then
         err "Theme dir not found: ${theme_dir}"
         return 1
     fi
 
+    if [[ ! -d "${script_dir}" ]]
+    then
+        err "Script dir not found: ${script_dir}"
+        return 1
+    fi
+
     (
         set -e
-        cd "${theme_dir}"
+        cd "${script_dir}"
         variant_script="variant-${variant}.script"
-        generated_script="generated.script"
-
-        rm -f "${generated_script}"
+        generated_script="${script_dir}/generated.script"
 
         if ! > "${generated_script}"
         then
-            err "Cannot write ${theme_dir}/${generated_script}"
+            err "Cannot write ${script_dir}/${generated_script}"
             return 1
         fi
 
-        cp -f "${variant_script}" "selected-variant.script"
+        if ! cat "${variant_script}" > "selected-variant.script"
+        then 
+            err "Could not update variant script."
+        fi
 
-        (
-            echo 'if (global.Version ) {'
-            echo '    AddVersionText("Theme " + THEME_NAME + " v" + VERSION);'
-            echo '    AddVersionText("Variant " + VARIANT_NAME);'
-            echo '}'
-        ) > "versiontext.script"
+        if ! > "versiontext.script" 
+        then 
+            err "Could not write version-text script"
+        else
+            (
+                echo 'if (global.Version ) {'
+                echo '    AddVersionText("Theme " + THEME_NAME + " v" + VERSION);'
+                echo '    AddVersionText("Variant " + VARIANT_NAME);'
+                echo '}'
+             ) > "versiontext.script"
+        fi
 
-        for v in "${vars[@]}"
-        do
-            echo "${v}"
-        done > "overrides.script"
+        if ! > "overrides.script"
+        then 
+            err "Could not overrides script."
+        else
+            for v in "${vars[@]}"
+            do
+                echo "${v}"
+            done > "overrides.script"
+        fi
 
-        if process_file "main.script" generated.script
+        if process_file "main.script" "${generated_script}"
         then
-            cat generated.script
+            echo "Generated $(wc -l < "${generated_script}") lines."
             echo "(no problems)"
         else
-            egrep -i error generated.script
+            egrep -i error "${generated_script}"
         fi
     )
 }
@@ -303,7 +342,7 @@ function main()
     local -a flags=()
     if (( $# ))
     then
-        if [[ " ${*} " =~ ${help_regex} ]]
+        if [[ " ${*} " =~ ${HELP_REGEX} ]]
         then
             usage
             exit 0
@@ -331,5 +370,4 @@ function main()
         "${SPLASH_THEME}" "${fallbacks["SPLASH_THEME"]}" \
         "${SPLASH_VARIANT}" "${fallbacks["SPLASH_VARIANT"]}"
 }
-
 main "${@}"
