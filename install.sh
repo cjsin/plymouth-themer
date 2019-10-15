@@ -36,10 +36,12 @@ function usage()
     msg "    OPTION1=0 OPTION2=1 ${0##*/}"
     msg ""
     msg "Options:"
-    msg "    ALTERNATIVE_WAITER   - modify plymouth to wait for splash-waiter script before quitting."
-    msg "    EARLY_TTYS           - stop getty service from waiting for plymouth to quit."
-    msg "    SELECT_THEME         - select this theme as the default after installation."
-    msg "    REBUILD_INITRD       - use -R option to plymouth-set-default-theme"
+    msg "    ALTERNATIVE_WAITER=1   - modify plymouth to wait for splash-waiter script before quitting."
+    msg "    EARLY_TTYS=1           - stop getty service from waiting for plymouth to quit."
+    msg "    SELECT_THEME=1         - select this theme as the default after installation."
+    msg "    REBUILD_INITRD=1       - use -R option to plymouth-set-default-theme"
+    msg "    THEME=<name>           - change the theme name"
+    msg "    VARIANT=<name>         - change the theme variant name"
 }
 
 function install-dropin()
@@ -102,16 +104,17 @@ function select-theme()
         then
             rebuild_flag="-R"
         fi
-        plymouth-set-default-theme ${rebuild_flag} "${THEME_NAME}"
-        echo "SPLASH_VARIANT=${VARIANT}" > "/etc/default/splash-${THEME_NAME}"
+        plymouth-set-default-theme ${rebuild_flag} "${THEME}"
+        echo "SPLASH_VARIANT=${VARIANT}" > "/etc/default/splash-${THEME}"
         # Note that this file needs to be edited within the initrd, generally, not the main
         # system (unless for example we're still running with the initrd as with a diskless boot)
-        sed -i 's/^Theme=/Theme=${THEME_NAME}/' "${ETC}/plymouth/plymouth.conf"
+        sed -i 's/^Theme=/Theme=${THEME}/' "${ETC}/plymouth/plymouth.conf"
     fi
 }
 
 function configure-themer()
 {
+    cp -f splash-themer.sh /usr/local/bin
     install-dropin plymouth-start splash-themer.conf
 }
 
@@ -137,6 +140,7 @@ function configure-waiter()
 {
     if (( ALTERNATIVE_WAITER ))
     then
+        cp -f splash-waiter.sh /usr/local/bin
         install-dropin plymouth-quit splash-waiter.conf
     fi
 }
@@ -162,10 +166,10 @@ function process-argv()
                     die "Unrecognised option value: '${val}' for ${key}"
                 fi
                 ;;
-            VARIANT=*)
+            VARIANT=*|THEME=*)
                 local key="${arg%%=*}"
                 local val="${arg#*=}"
-                eval "${arg}"="${val}"
+                eval "${key}"="${val}"
                 ;;
             *)
                 usage
