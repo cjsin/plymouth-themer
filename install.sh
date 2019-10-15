@@ -5,6 +5,7 @@ EARLY_TTYS="${EARLY_TTYS:-${ALTERNATIVE_WAITER}}"
 SELECT_THEME="${SELECT_THEME:-0}"
 REBUILD_INITRD="${REBUILD_INITRD:-0}"
 THEME="${THEME:-example}"
+RENAME="${RENAME:-themer}"
 
 # This is determined automagically later from the plymouth-set-default-theme command
 THEMES="/usr/share/plymouth/themes"
@@ -93,6 +94,8 @@ function copy-theme()
         msg "Copied successfully."
         return 0
     fi
+
+    copy-as-new-theme
 }
 
 function select-theme()
@@ -145,6 +148,18 @@ function configure-waiter()
     fi
 }
 
+function copy-as-new-theme()
+{
+    if [[ -n "${RENAME}" ]] && [[ "${RENAME}" != "${THEME_NAME}" ]]
+    then
+        local old_theme="${THEMES}/${THEME##*/}/"
+        local new_theme="${THEMES}/${RENAME}/"
+        rsync -av "${THEMES}/${THEME##*/}/" "${RENAME}/"
+        mv "${new_theme}/${THEME}.plymouth" "${new_theme}/${RENAME}.plymouth"
+        sed -i 's%themes/${THEME}%themes/${RENAME}%' "${new_theme}/${RENAME}.plymouth"
+    fi
+}
+
 function process-argv()
 {
     local arg
@@ -166,7 +181,7 @@ function process-argv()
                     die "Unrecognised option value: '${val}' for ${key}"
                 fi
                 ;;
-            VARIANT=*|THEME=*)
+            VARIANT=*|THEME=*|RENAME=*)
                 local key="${arg%%=*}"
                 local val="${arg#*=}"
                 eval "${key}"="${val}"
