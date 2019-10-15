@@ -127,15 +127,32 @@ function configure-ttys()
     # then we need to stop the login ttys from waiting for the splash
     if (( EARLY_TTYS ))
     then
-        local getty_after=$(systemctl cat getty@.service \
-            | sed -n -e '/^After=/ { s/(plymouth-quit-wait|rc-local)[.]service/ /g; s/^After=[[:space:]]*$//; p}' )
+        local getty_service=$(systemctl cat getty@.service)
 
-       local tmpd=$(mktemp -t -d tmp_dropin.XXXXXX)
-       local getty_dropin="${tmpd}/splash-waiter.conf"
-       echo -e "[Unit]\nAfter=\n${getty_after}" > "${getty_dropin}"
+        # The 'systemctl cat' can fail when running in chroot or fakeroot
+        if [[ -z "${getty_service}" ]]
+        then
+            local -a getty_service_files=( /{usr,}/lib/systemd/getty@.service)
+            local f
+            for f in "${getty_service_files[@]}"
+            do
+                getty_service=$(cat "${f}")
+                [[ -n "${getty_service}" ]] && break
+            done
+        fi
 
-       install-dropin getty@.service "${getty_dropin}"
-       systemctl disable getty@tty1.service
+        if [[ -z "${getty_service}" ]]
+        then
+            err "Could not find existing getty service!"
+        else
+            local getty_after=$(sed <<< "${getty_service}" -n -e '/^After=/ { s/(plymouth-quit-wait|rc-local)[.]service/ /g; s/^After=[[:space:]]*$//; p}' )
+            local tmpd=$(mktemp -t -d tmp_dropin.XXXXXX)
+            local getty_dropin="${tmpd}/splash-waiter.conf"
+            echo -e "[Unit]\nAfter=\n${getty_after}" > "${getty_dropin}"
+
+           install-dropin getty@.service "${getty_dropin}"
+           systemctl disable getty@tty1.service
+        fi
     fi
 }
 
