@@ -134,10 +134,11 @@ function configure-ttys()
         then
             local -
             shopt -s nullglob
-            local -a getty_service_files=( /{usr,}/lib/systemd/getty@.service)
+            local -a getty_service_files=( $(echo /{usr,}/lib/systemd/system/getty@.service) )
             local f
             for f in "${getty_service_files[@]}"
             do
+                msg "Check ${f}"
                 getty_service=$(cat "${f}")
                 [[ -n "${getty_service}" ]] && break
             done
