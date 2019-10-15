@@ -132,6 +132,8 @@ function configure-ttys()
         # The 'systemctl cat' can fail when running in chroot or fakeroot
         if [[ -z "${getty_service}" ]]
         then
+            local -
+            shopt -s nullglob
             local -a getty_service_files=( /{usr,}/lib/systemd/getty@.service)
             local f
             for f in "${getty_service_files[@]}"
