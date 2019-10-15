@@ -108,7 +108,7 @@ function select-theme()
         echo "SPLASH_VARIANT=${VARIANT}" > "/etc/default/splash-${THEME}"
         # Note that this file needs to be edited within the initrd, generally, not the main
         # system (unless for example we're still running with the initrd as with a diskless boot)
-        sed -i 's/^Theme=/Theme=${THEME}/' "${ETC}/plymouth/plymouth.conf"
+        sed -i 's/^Theme=/Theme=${THEME}/' "${ETC}/plymouth/plymouthd.conf"
     fi
 }
 
