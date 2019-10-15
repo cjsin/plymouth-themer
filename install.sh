@@ -152,6 +152,7 @@ function copy-as-new-theme()
 {
     if [[ -n "${RENAME}" ]] && [[ "${RENAME}" != "${THEME_NAME}" ]]
     then
+        msg "Copying theme ${THEME} as ${RENAME}."
         local old_theme="${THEMES}/${THEME##*/}/"
         local new_theme="${THEMES}/${RENAME}/"
         rsync -av "${THEMES}/${THEME##*/}/" "${RENAME}/"
