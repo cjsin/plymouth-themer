@@ -173,7 +173,7 @@ function copy-as-new-theme()
         msg "Copying theme ${THEME} as ${RENAME}."
         local old_theme="${THEMES}/${THEME##*/}/"
         local new_theme="${THEMES}/${RENAME}/"
-        rsync -av "${THEMES}/${THEME##*/}/" "${RENAME}/"
+        rsync -av "${THEMES}/${THEME##*/}/" "${new_theme}/"
         mv "${new_theme}/${THEME}.plymouth" "${new_theme}/${RENAME}.plymouth"
         sed -i 's%themes/${THEME}%themes/${RENAME}%' "${new_theme}/${RENAME}.plymouth"
         THEME="${RENAME}"
