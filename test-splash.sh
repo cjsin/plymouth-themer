@@ -30,6 +30,10 @@
 
     sleep 2;
 
+    plymouth quit &
+
+    sleep 2
+
     killall -TERM plymouthd
 
     sleep 2

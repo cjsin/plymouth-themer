@@ -1,9 +1,9 @@
 #!/bin/bash -e
-#set -vx
+
 shopt -s nullglob
 
 HELP_REGEX='[[:space:]](-h|-help|--help|help)[[:space:]]'
-THEME_NAME="${THEME_NAME:-dudebarf}"
+THEME_NAME="${THEME_NAME:-themer}"
 THEMES="${THEMES:-/usr/share/plymouth/themes}"
 TESTING="${TESTING:-0}"
 NUMBERING="${NUMBERING:-0}"
@@ -299,12 +299,12 @@ function update_theme()
         fi
 
         if ! cat "${variant_script}" > "selected-variant.script"
-        then 
+        then
             err "Could not update variant script."
         fi
 
-        if ! > "versiontext.script" 
-        then 
+        if ! > "versiontext.script"
+        then
             err "Could not write version-text script"
         else
             (
@@ -316,7 +316,7 @@ function update_theme()
         fi
 
         if ! > "overrides.script"
-        then 
+        then
             err "Could not overrides script."
         else
             for v in "${vars[@]}"
