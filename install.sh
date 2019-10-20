@@ -90,11 +90,9 @@ function copy-theme()
     then
         err "Failed copying theme files."
         return 1
-    else
-        msg "Copied successfully."
-        return 0
     fi
 
+    msg "Copied successfully."
     copy-as-new-theme
 }
 
@@ -178,6 +176,7 @@ function copy-as-new-theme()
         rsync -av "${THEMES}/${THEME##*/}/" "${RENAME}/"
         mv "${new_theme}/${THEME}.plymouth" "${new_theme}/${RENAME}.plymouth"
         sed -i 's%themes/${THEME}%themes/${RENAME}%' "${new_theme}/${RENAME}.plymouth"
+        THEME="${RENAME}"
     fi
 }
 

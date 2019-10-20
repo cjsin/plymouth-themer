@@ -4,6 +4,7 @@ TTY="tty1"
 WAIT=60
 START_TTY=0
 SWITCH_TTY=5
+LOGFILE=/dev/shm/splash-waiter.log
 
 function usage()
 {
@@ -12,7 +13,10 @@ function usage()
 
 function do_wait()
 {
-    sleep "${WAIT}"
+    if ! (( waited ))
+    then
+        sleep "${WAIT}"
+    fi
 }
 function motd()
 (
@@ -52,6 +56,9 @@ function main()
         usage
         exit 1
     fi
+    local waited=0
+    [[ -f "${LOGFILE}" ]] && waited=1
+
     local arg=""
     for arg in "${@}"
     do
@@ -64,7 +71,7 @@ function main()
                 do_ready
                 ;;
             -w|-wait|--wait|wait)
-                do_wait
+                do_wait > "${LOGFILE}" 2>&1
                 ;;
             *)
                 err "Unrecognised argument: ${arg}"
