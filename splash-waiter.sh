@@ -5,6 +5,7 @@ WAIT=60
 START_TTY=0
 SWITCH_TTY=5
 LOGFILE=/dev/shm/splash-waiter.log
+KERNEL_REGEX='(^|[[:space:]])splash([[:space:]]|)$'
 
 function usage()
 {
@@ -13,6 +14,12 @@ function usage()
 
 function do_wait()
 {
+    if ! egrep "${KERNEL_REGEX}" /proc/cmdline
+    then
+        echo "The splash is not enabled." 1>&2
+        return 0
+    fi
+
     if ! (( waited ))
     then
         sleep "${WAIT}"
