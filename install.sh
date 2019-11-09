@@ -49,7 +49,7 @@ function install-dropin()
 {
     local service_name="${1}"
     local file="${2}"
-    local dir="/etc/systemd/system/${service_name}.service.d"
+    local dir="/etc/systemd/system/${service_name}.d"
     mkdir -p "${dir}"
     cp -f "${file}" "${dir}/"
 }
@@ -106,7 +106,12 @@ function select-theme()
             rebuild_flag="-R"
         fi
         plymouth-set-default-theme ${rebuild_flag} "${THEME}"
-        echo "SPLASH_VARIANT=${VARIANT}" > "/etc/default/splash-${THEME}"
+        echo "THEME_NAME=${THEME}" > "/etc/default/splash-themer"
+        echo "SPLASH_VARIANT=${VARIANT}" >> "/etc/default/splash-themer"
+        if [[ "${THEME}" != "themer" ]]
+        then
+            echo "SPLASH_VARIANT=${VARIANT}" > "/etc/default/splash-${THEME}"
+        fi
         # Note that this file needs to be edited within the initrd, generally, not the main
         # system (unless for example we're still running with the initrd as with a diskless boot)
         sed -i "s/^Theme=.*/Theme=${THEME}/" "${ETC}/plymouth/plymouthd.conf"
